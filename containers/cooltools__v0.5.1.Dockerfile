@@ -8,7 +8,7 @@ ARG MAMBA_DOCKERFILE_ACTIVATE=1
 
 ARG CONTAINER_VERSION
 ARG CONTAINER_TITLE
-ARG HICEXPLORER_VER=${CONTAINER_VERSION}
+ARG COOLTOOLS_VER=${CONTAINER_VERSION}
 ARG PIP_NO_CACHE_DIR=0
 
 RUN if [ -z "$CONTAINER_VERSION" ]; then echo "Missing CONTAINER_VERSION --build-arg" && exit 1; fi
@@ -16,21 +16,24 @@ RUN if [ -z "$CONTAINER_VERSION" ]; then echo "Missing CONTAINER_VERSION --build
 RUN micromamba install -y \
         -c conda-forge \
         -c bioconda \
-        "hicexplorer=$HICEXPLORER_VER" \
+        "cooltools=$COOLTOOLS_VER" \
 && micromamba clean --all -y
 
 ENV PATH="/opt/conda/bin:$PATH"
 
-ENTRYPOINT ["/bin/bash"]
+ENTRYPOINT ["/opt/conda/bin/cooltools"]
 WORKDIR /data
 
-RUN hicConvertFormat --help
+
+RUN cooltools --help
+RUN cooler --help
+RUN python3 -c "import cooler; import cooltools"
 
 LABEL org.opencontainers.image.authors='Roberto Rossini <roberros@uio.no>'
-LABEL org.opencontainers.image.url='https://github.com/paulsengroup/2022-confined-polymer-paper-data-analysis'
-LABEL org.opencontainers.image.documentation='https://github.com/2022-confined-polymer-paper-data-analysis'
-LABEL org.opencontainers.image.source='https://github.com/paulsengroup/2022-confined-polymer-paper-data-analysis'
+LABEL org.opencontainers.image.url='https://github.com/paulsengroup/2021-modle-paper-001-data-analysis'
+LABEL org.opencontainers.image.documentation='https://github.com/2021-modle-paper-001-data-analysis'
+LABEL org.opencontainers.image.source='https://github.com/paulsengroup/2021-modle-paper-001-data-analysis'
 LABEL org.opencontainers.image.licenses='MIT'
-LABEL org.opencontainers.image.title="${CONTAINER_TITLE:-hicexplorer}"
+LABEL org.opencontainers.image.title="${CONTAINER_TITLE:-cooltools}"
 LABEL org.opencontainers.image.version="${CONTAINER_VERSION:-latest}"
 
