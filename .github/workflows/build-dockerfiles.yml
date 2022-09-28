@@ -29,6 +29,7 @@ jobs:
         image-name: [ "cooltools",
                       "hic9_to_cool",
                       "hicexplorer",
+                      "py-utils",
                       "utils" ]
 
     steps:
