@@ -34,6 +34,7 @@ function run_workflow() {
         -c "configs/$name.config" \
         -c "$base_config" \
         "workflows/$name.nf" \
+        -process.cache=deep \
         -ansi-log \
         -resume
 }
