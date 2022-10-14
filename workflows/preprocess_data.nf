@@ -6,16 +6,26 @@
 nextflow.enable.dsl=2
 
 workflow {
-    generate_chrom_sizes("${params.grch38_assembly_name_short}",
-                         file(params.grch38_assembly_report))
+    generate_chrom_sizes(Channel.of(params.grch38_assembly_name_short,
+    							    params.mgscv37_assembly_name_short),
+						 Channel.of(file(params.grch38_assembly_report),
+						            file(params.mgscv37_assembly_report)))
 
-    grch38_chrom_sizes = generate_chrom_sizes.out.chrom_sizes
-                         .filter { it =~ /^.*${params.grch38_assembly_name_short}.chrom.sizes$/ }
-                         .first()
+	chrom_sizes = \
+	    generate_chrom_sizes.out.chrom_sizes
+                            .branch {
+                                  grch38: it =~ /^.*${params.grch38_assembly_name_short}.chrom.sizes$/
+                                  mgscv37: it =~ /^.*${params.mgscv37_assembly_name_short}.chrom.sizes$/
+                            }
 
-    convert_hic_to_cool(grch38_chrom_sizes,
+    convert_hic_to_cool(chrom_sizes.grch38,
                         Channel.fromPath(file("${params.hic_files}")),
-                        params.bin_size)
+                        params.grch38_bin_size)
+
+    convert_geo_txt_to_cool(chrom_sizes.mgscv37,
+                            Channel.fromPath(file(params.txt_matrix_files)),
+                            "mm9",
+                            params.mgscv37_bin_size)
 }
 
 process generate_chrom_sizes {
@@ -56,7 +66,7 @@ process convert_hic_to_cool {
         val bin_size
 
     output:
-        path "*.mcool", emit: cool
+        path "*.mcool", emit: mcool
 
     shell:
         out = "${hic.baseName}.mcool"
@@ -70,5 +80,36 @@ process convert_hic_to_cool {
                               '!{bin_size}'    \
                               '!{out}'         \
                               "$chroms"
+        '''
+}
+
+process convert_geo_txt_to_cool {
+    publishDir "${params.output_dir}", mode: 'copy'
+
+    label 'process_medium'
+
+    input:
+        path chrom_sizes
+        path matrix_txt
+        val assembly_name
+        val bin_size
+
+    output:
+        path "*.mcool", emit: mcool
+
+    shell:
+        out = "${matrix_txt.baseName}.mcool"
+        '''
+        set -o pipefail
+
+		zcat '!{matrix_txt}' |
+		'!{params.script_dir}/geo_txt_matrix_to_bedpe.py' |
+        cooler load -f bg2 \
+        		    --count-as-float \
+        		    --assembly='!{assembly_name}' \
+        		    '!{chrom_sizes}:!{bin_size}' \
+					- out.cool
+
+		cooler zoomify -p '!{task.cpus}' -r N -o '!{out}' out.cool
         '''
 }
