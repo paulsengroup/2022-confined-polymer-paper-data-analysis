@@ -42,6 +42,6 @@ for chrom in "${chroms[@]}"; do
 done |
 cooler load -f bg2 --assembly hg38 --input-copy-status unique <(cooler makebins "$chrom_sizes" "$bin_size") - "$tmp_cool"
 
-cooler zoomify --balance --balance-args="-p $(nproc) --cis-only --max-iters 300" -p $(nproc) -o "$output_mcool" "$tmp_cool"
+cooler zoomify --resolution N --balance --balance-args="-p $(nproc) --cis-only --max-iters 300" -p $(nproc) -o "$output_mcool" "$tmp_cool"
 
 rm -f "$tmp_cool"
