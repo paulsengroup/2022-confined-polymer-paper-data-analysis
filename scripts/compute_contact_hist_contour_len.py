@@ -65,6 +65,9 @@ def normalize(matrices, how):
     tot_contacts = [np.sum(m) for m in matrices]
     smallest_tot_contacts = np.min(tot_contacts)
 
+    if smallest_tot_contacts == 0:
+        return [np.zeros_like(m) for m in matrices]
+
     return [m / (tot / smallest_tot_contacts) for m, tot in zip(matrices, tot_contacts)]
     # for m in matrices:
     #     assert np.allclose(np.sum(m), np.sum(matrices[0]))
