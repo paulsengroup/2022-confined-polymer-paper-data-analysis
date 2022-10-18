@@ -6,7 +6,11 @@
 nextflow.enable.dsl=2
 
 workflow {
-	compute_contact_histogram(Channel.fromPath(params.mcools).collect(),
+    // Group files by prefix (i.e. by assembly)
+    mcools = Channel.fromPath(params.mcools)
+                    .map { tuple(it.getName().replaceAll(/^(.+?)_.*/, '$1'), it) }
+                    .groupTuple()
+	compute_contact_histogram(mcools,
 							  params.bin_size)
 }
 
@@ -16,7 +20,7 @@ process compute_contact_histogram {
     label 'process_short'
 
     input:
-        path matrices
+        tuple val(prefix), path(matrices)
         val resolution
 
     output:
@@ -46,6 +50,6 @@ process compute_contact_histogram {
 		'!{params.script_dir}/compute_contact_hist_contour_len.py' \
 			"${coolers[@]}" \
 			--labels "${labels[@]}" |
-			tee contact_histogram_by_contour_length.tsv > /dev/null
+			tee '!{prefix}_contact_histogram_by_contour_length.tsv' > /dev/null
         '''
 }
