@@ -18,8 +18,8 @@ workflow {
                                   mgscv37: it =~ /^.*${params.mgscv37_assembly_name_short}.chrom.sizes$/
                             }
 
-    convert_hic_to_cool(chrom_sizes.grch38,
-                        Channel.fromPath(file("${params.hic_files}")),
+    convert_hic_to_cool(chrom_sizes.grch38.first(),
+                        Channel.fromPath(params.hic_files),
                         params.grch38_bin_size)
 
     convert_geo_txt_to_cool(chrom_sizes.mgscv37,
