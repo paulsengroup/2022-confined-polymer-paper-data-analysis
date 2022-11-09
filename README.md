@@ -1,6 +1,6 @@
 # Synopsis
 
-This repository contains the source code and input data used to generate results presented in "Association of flexible filaments under different confinement geometries" (preprint available soon).
+This repository contains the source code and input data used to generate Figure 5 of "Association of flexible filaments under different confinement geometries" (preprint available soon).
 
 Input data download and subsequent analyses are automated using Nextflow and Singularity/Apptainer.
 
